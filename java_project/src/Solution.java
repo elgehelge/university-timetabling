@@ -6,8 +6,8 @@ public class Solution {
 	// Reference to the problem which this is a solution for
 	private Problem problem;
 	// Solution state
-	private Integer[][][] timetable;			// room + day + period			-> course (The Timetable)
-	private int[] unscheduled;					// course						-> no. of unscheduled lectures
+	private Integer[][][] timetable;			// room + day + period			-> courseID (The Timetable)
+	private int[] unscheduled;					// courseID						-> no. of unscheduled lectures
 	// Bookkeeping of hard constraints
 	private boolean[][][] curriculaTimeslots;	// curriculum + day + period	-> already being thought?
 	private boolean[][][] lecturersTimeslots;	// lecturer + day + period		-> already teaching?
@@ -54,26 +54,41 @@ public class Solution {
 		return output;
 	}
 	
-	public void addRandomLecture() {
+	public void insertRandomLecture() {
 		Random generator = new Random();
 		int room = generator.nextInt(this.problem.noOfRooms);
 		int day = generator.nextInt(this.problem.noOfDays);
 		int period = generator.nextInt(this.problem.periodsPerDay);
 		int courseID = generator.nextInt(this.problem.noOfCourses);
-		addLecture(room, day, period, courseID);
+		insertLecture(room, day, period, courseID);
 	}
 	
-	private void addLecture(int room, int day, int period, int courseID) {
+	public void removeRandomLecture() {
+		Random generator = new Random();
+		int room = generator.nextInt(this.problem.noOfRooms);
+		int day = generator.nextInt(this.problem.noOfDays);
+		int period = generator.nextInt(this.problem.periodsPerDay);
+		removeLecture(room, day, period);
+	}
+	
+	private Integer insertLecture(int room, int day, int period, int courseID) {
+		Integer totalCost;
 		if (!isFeasible(room, day, period, courseID)) {
-			//return null; TODO: Make return
+			totalCost = null;
 		} else {
-			costEstimator.calcDeltaCost(room, day, period, courseID);
-			updateSolution(room, day, period, courseID);
+			totalCost = costEstimator.calcDeltaCostAdd(room, day, period, courseID);
+			updateSolutionInsert(room, day, period, courseID);
 		}
+		return totalCost;
+	}
+	
+	private void removeLecture(int room, int day, int period) {
+		//totalCost = costEstimator.calcDeltaCostRemove(room, day, period);
+		updateSolutionRemove(room, day, period);
 	}
 	
 	
-	private void updateSolution(int room, int day, int period, int courseID) {
+	private void updateSolutionInsert(int room, int day, int period, int courseID) {
 		Problem.Course course = this.problem.courses.get(courseID);
 		// Register in timetable
 		this.timetable[room][day][period] = courseID;
@@ -86,6 +101,25 @@ public class Solution {
 		}
 		// Register that we scheduled a lecture
 		this.unscheduled[courseID] += -1;
+	}
+	
+	private void updateSolutionRemove(int room, int day, int period) {
+		Integer courseID = this.timetable[room][day][period];
+		if (courseID == null) {
+			return;
+		}
+		Problem.Course course = this.problem.courses.get(courseID);
+		// Remove in timetable
+		this.timetable[room][day][period] = null;
+		// Remove lecturer
+		this.lecturersTimeslots[course.lecturerID][day][period] = false;
+		// Remove curricula
+		Iterator<Integer> curricula = course.curricula.iterator();
+		while (curricula.hasNext()) {
+			this.curriculaTimeslots[curricula.next()][day][period] = false;
+		}
+		// Register that we unscheduled a lecture
+		this.unscheduled[courseID] += 1;
 	}
 	
 	private boolean isFeasible(int room, int day, int period, int courseID) {

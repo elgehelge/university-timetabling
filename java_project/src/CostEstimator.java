@@ -9,17 +9,17 @@ public class CostEstimator {
 	final static int COST_MINIMUMWORKINGDAYS	= 5;
 	final static int COST_UNSCHEDULED			= 10;
 
-	private int countTotalPenalties;
+	private int costTotalPenalties;
 	private int countUnscheduled;
 	private int countRoomCapacity;
 	private int countMinimumWorkingDays;
 	private int countRoomStability;
 	private int countCurriculumCompactness;
 	
-	private int[][] coursesDays;				// course + day					-> no. of lectures this day
-	private int[] courseDaysBelowMinimum;		// course						-> no. of days below minimum
-	private int[][] coursesRooms;				// course + room				-> no. of lectures in room
-	private int[] courseNoOfRooms;				// course						-> no. of distinct rooms
+	private int[][] coursesDays;				// courseID + day				-> no. of lectures this day
+	private int[] courseDaysBelowMinimum;		// courseID						-> no. of days below minimum
+	private int[][] coursesRooms;				// courseID + room				-> no. of lectures in room
+	private int[] courseNoOfRooms;				// courseID						-> no. of distinct rooms
 
 	private Problem problem;
 	private Solution solution;
@@ -51,17 +51,16 @@ public class CostEstimator {
 		this.countRoomStability = 0;
 		this.countUnscheduled = initialUnscheduled;
 		this.countMinimumWorkingDays = initialDaysBelowMinimum;
-		this.countTotalPenalties = countUnscheduled * COST_UNSCHEDULED + countMinimumWorkingDays * COST_MINIMUMWORKINGDAYS;
+		this.costTotalPenalties = countUnscheduled * COST_UNSCHEDULED + countMinimumWorkingDays * COST_MINIMUMWORKINGDAYS;
 	}
 	
-	public void calcDeltaCost(int room, int day, int period, int courseID) {
+	public int calcDeltaCostAdd(int room, int day, int period, int courseID) {
 		Problem.Course course = this.problem.courses.get(courseID);
 		
 		// RoomCapacity
 		int deltaCountRoomCapacity = Math.max(0, course.noOfStudents - problem.roomCapacity.get(room));
 		
-		// CurriculumCompactness (Estimate - This is to complex to calculate!!)
-		System.out.println("Course " + courseID);
+		// CurriculumCompactness
 		int deltaCountCurriculumCompactness = 0;
 		Iterator<Integer> curricula = problem.courses.get(courseID).curricula.iterator();
 		while (curricula.hasNext()) { // for each curriculum
@@ -83,7 +82,6 @@ public class CostEstimator {
 				deltaCountCurriculumCompactness += 1;
 			}
 		}
-		System.out.println("CurriculumCompactness " + deltaCountCurriculumCompactness);
 		
 		// MinimumWorkingDays
 		int deltaCountMinWorkDays = 0;
@@ -121,8 +119,9 @@ public class CostEstimator {
 		this.countRoomStability += deltaCountRoomStability;
 		this.countMinimumWorkingDays += deltaCountMinWorkDays;
 		this.countCurriculumCompactness += deltaCountCurriculumCompactness;
-		this.countTotalPenalties += deltaTotalCost;
+		this.costTotalPenalties += deltaTotalCost;
 		
+		return costTotalPenalties;
 	}
 	
 	public String codeJudgeHeader() {
@@ -132,6 +131,6 @@ public class CostEstimator {
 			"ROOMSTABILITY " + countRoomStability + "\n" +
 			"MINIMUMWORKINGDAYS " + countMinimumWorkingDays + "\n" +
 			"CURRICULUMCOMPACTNESS " + countCurriculumCompactness + "\n" +
-			"OBJECTIVE " + countTotalPenalties + "\n";
+			"OBJECTIVE " + costTotalPenalties + "\n";
 	}
 }

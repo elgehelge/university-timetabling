@@ -3,6 +3,7 @@ import java.io.IOException;
 public class Main {
 
 	final static String LOCAL_TEST_NO = "01";
+	static boolean local = false;
 	
     public static void main(String[] args) throws IOException {
     	
@@ -10,22 +11,30 @@ public class Main {
     	
     	// RUN LOCAL (no arguments given)
     	if (args.length == 0) {
+    		local = true;
     		args = new String[]{"basic.utt", "courses.utt", "lecturers.utt", "rooms.utt", "curricula.utt", "relation.utt", "unavailability.utt"};
     		dataLocation = "./TestDataUTT/Test" + LOCAL_TEST_NO + "/";
     	}
     	
         Problem problemInstance = new Problem(dataLocation, args);
-        //System.out.println(problemInstance.toString());
+        print(problemInstance);
         
         Solution SolutionInstance = new Solution(problemInstance);
-        for (int i = 0; i < 10000; i++) {
-        	SolutionInstance.addRandomLecture();
+        for (int i = 0; i < 20000; i++) {
+        	SolutionInstance.insertRandomLecture();
+        	SolutionInstance.removeRandomLecture();
         }
-        //System.out.println(SolutionInstance);
-        System.out.println(SolutionInstance.codeJudgeOutput());
+        print(SolutionInstance);
         
-        //System.out.println("Great Success!");
-    	
+        print(SolutionInstance.codeJudgeOutput());
+        
+        print("Great Success!");    	
+    }
+    
+    static private void print(Object obj) {
+    	if (local) {
+    		System.out.println(obj);
+    	}
     }
 
 }
