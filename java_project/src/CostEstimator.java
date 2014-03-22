@@ -61,10 +61,29 @@ public class CostEstimator {
 		int deltaCountRoomCapacity = Math.max(0, course.noOfStudents - problem.roomCapacity.get(room));
 		
 		// CurriculumCompactness (Estimate - This is to complex to calculate!!)
-		int deltaCountCurriculumCompactness = 1;
-		if (isCurriculumCompact(room, day, period, courseID)) {
-			deltaCountCurriculumCompactness = 0;
+		System.out.println("Course " + courseID);
+		int deltaCountCurriculumCompactness = 0;
+		Iterator<Integer> curricula = problem.courses.get(courseID).curricula.iterator();
+		while (curricula.hasNext()) { // for each curriculum
+			int curriculum = curricula.next();
+			boolean isAlone = true; // Assuming that curriculum is alone
+			for (int shift : new int[]{-1, 1}) {
+				int adjacentPeriod = period + shift;
+				if (this.solution.isCurriculaTaught(curriculum, day, adjacentPeriod)) {
+					// Curriculum taught by adjacent period
+					isAlone = false;
+					int adjacentAdjacentPeriod = adjacentPeriod + shift;
+					if (!this.solution.isCurriculaTaught(curriculum, day, adjacentAdjacentPeriod)) {
+						// Curriculum is NOT also taught by 2nd adjacent period
+						deltaCountCurriculumCompactness += -1;
+					}
+				}
+			}
+			if (isAlone) { // No lectures with the same curriculum in either direction
+				deltaCountCurriculumCompactness += 1;
+			}
 		}
+		System.out.println("CurriculumCompactness " + deltaCountCurriculumCompactness);
 		
 		// MinimumWorkingDays
 		int deltaCountMinWorkDays = 0;
@@ -104,21 +123,6 @@ public class CostEstimator {
 		this.countCurriculumCompactness += deltaCountCurriculumCompactness;
 		this.countTotalPenalties += deltaTotalCost;
 		
-	}
-	
-	private boolean isCurriculumCompact(int room, int day, int period, int courseID) {
-		Iterator<Integer> curricula = problem.courses.get(courseID).curricula.iterator();
-		while (curricula.hasNext()) {
-			int curriculum = curricula.next();
-			for (int adjPeriod : new int[]{period-1, period+1}) {
-				if (adjPeriod > 0 && adjPeriod < problem.periodsPerDay) {
-					if (this.solution.getCurriculaTimeslots(curriculum, day, adjPeriod)) {
-						return true;
-					}
-				}
-			}
-		}
-		return false;
 	}
 	
 	public String codeJudgeHeader() {

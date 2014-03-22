@@ -3,16 +3,15 @@ import java.util.Random;
 
 
 public class Solution {
-
+	// Reference to the problem which this is a solution for
 	private Problem problem;
-	
+	// Solution state
 	private Integer[][][] timetable;			// room + day + period			-> course (The Timetable)
 	private int[] unscheduled;					// course						-> no. of unscheduled lectures
-	
 	// Bookkeeping of hard constraints
 	private boolean[][][] curriculaTimeslots;	// curriculum + day + period	-> already being thought?
 	private boolean[][][] lecturersTimeslots;	// lecturer + day + period		-> already teaching?
-	
+	// Bookkeeping of soft constraints
 	private CostEstimator costEstimator;
 	
 	public Solution(Problem problem) {
@@ -123,8 +122,11 @@ public class Solution {
 	//	// TODO: should return delta-cost & courseID
 	//}
 	
-	public boolean getCurriculaTimeslots(int curriculum, int day, int adjPeriod) {
-		return this.curriculaTimeslots[curriculum][day][adjPeriod];
+	public boolean isCurriculaTaught(int curriculum, int day, int period) {
+		if (period >= 0 && period < problem.periodsPerDay) {
+			return this.curriculaTimeslots[curriculum][day][period];
+		}
+		return false;
 	}
 	
 	public String codeJudgeOutput() {
