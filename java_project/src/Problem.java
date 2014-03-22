@@ -6,6 +6,12 @@ import java.io.StreamTokenizer;
 import java.util.HashMap;
 import java.util.HashSet;
 
+/**
+ * 
+ * Represents a problem instance.
+ * Is only used for looking up problem info.
+ *
+ */
 public class Problem {
 	
 	public int noOfCourses,
@@ -18,12 +24,8 @@ public class Problem {
 	public HashMap<Integer, Course> courses;						// courseID -> course object
 	public HashMap<Integer, Integer> roomCapacity;					// roomID -> no. of seats
 	
-	private StreamTokenizer streamreader; //The streamreader
-	
     /**
-     * Constructor of the class Problem
-     * @param Datafile - The name and path of the file to be loaded
-     * @throws java.io.IOException
+     * Constructor.
      */
     public Problem(String dataLocation, String[] args) throws IOException
     {
@@ -39,47 +41,42 @@ public class Problem {
     }
     
     /**
-     * Converts day and periode to timeslotID
-     * @return timeslotID
+     * Converts day and period to timeslotID.
      */
     public int calcTimeslotID(int day, int periode) {
     	return day * this.periodsPerDay + periode;
     }
     
 	/**
-     * Reads information from the basic.utt file
-     * @param fileName
-     * @throws IOException
+     * Reads information from the basic.utt file.
      */
 	private void readBasic(String DataLocation, String fileName) throws IOException {
 		// File structure:
 		// Courses Rooms Days Periods_per_day Curricula Constraints Lecturers
-		openFile(DataLocation + fileName);
-		this.noOfCourses = nextNumber();
-		this.noOfRooms = nextNumber();
-		this.noOfDays = nextNumber();
-		this.periodsPerDay = nextNumber();
-		this.noOfCurricula = nextNumber();
-		this.noOfConstraints = nextNumber();
-		this.noOfLecturers = nextNumber();
+		InputReader reader = new InputReader(DataLocation + fileName);
+		this.noOfCourses = reader.nextNumber();
+		this.noOfRooms = reader.nextNumber();
+		this.noOfDays = reader.nextNumber();
+		this.periodsPerDay = reader.nextNumber();
+		this.noOfCurricula = reader.nextNumber();
+		this.noOfConstraints = reader.nextNumber();
+		this.noOfLecturers = reader.nextNumber();
 	}
 	
 	/**
-     * Reads information from the courses.utt file
-     * @param fileName
-     * @throws IOException
+     * Reads information from the courses.utt file.
      */
 	private void readCourses(String DataLocation, String fileName) throws IOException {
 		// File structure:
 		// CourseID LecturerID Number_of_lectures Minimum_working_days Number_of_students
-		openFile(DataLocation + fileName);
+		InputReader reader = new InputReader(DataLocation + fileName);
 		boolean reachedEndOfFile = false;
 		while(!reachedEndOfFile) {
-			int courseID = nextNumber();
-			int lecturerID = nextNumber();
-			int noOfLectures = nextNumber();
-			int minWorkDays = nextNumber();
-			int noOfStudents = nextNumber();
+			int courseID = reader.nextNumber();
+			int lecturerID = reader.nextNumber();
+			int noOfLectures = reader.nextNumber();
+			int minWorkDays = reader.nextNumber();
+			int noOfStudents = reader.nextNumber();
 			if (courseID != -1) {
 				Course currentCourse = new Course(courseID, lecturerID, noOfLectures, minWorkDays, noOfStudents);
 				this.courses.put(courseID, currentCourse);
@@ -90,18 +87,16 @@ public class Problem {
 	}
 	
 	/**
-     * Reads information from the rooms.utt file
-     * @param fileName
-     * @throws IOException
+     * Reads information from the rooms.utt file.
      */
 	private void readRooms(String DataLocation, String fileName) throws IOException {
 		// File structure:
 		// RoomID Capacity
-		openFile(DataLocation + fileName);
+		InputReader reader = new InputReader(DataLocation + fileName);
 		boolean reachedEndOfFile = false;
 		while(!reachedEndOfFile) {
-			int roomID = nextNumber();
-			int capacity = nextNumber();
+			int roomID = reader.nextNumber();
+			int capacity = reader.nextNumber();
 			if (roomID != -1) {
 				this.roomCapacity.put(roomID, capacity);
 			} else {
@@ -111,18 +106,16 @@ public class Problem {
 	}
 	
 	/**
-     * Reads information from the relation.utt file
-     * @param fileName
-     * @throws IOException
+     * Reads information from the relation.utt file.
      */
 	private void readRelations(String DataLocation, String fileName) throws IOException {
 		// File structure:
 		// CurriculumID CourseID
-		openFile(DataLocation + fileName);
+		InputReader reader = new InputReader(DataLocation + fileName);
 		boolean reachedEndOfFile = false;
 		while(!reachedEndOfFile) {
-			int curriculumID = nextNumber();
-			int courseID = nextNumber();
+			int curriculumID = reader.nextNumber();
+			int courseID = reader.nextNumber();
 			if (curriculumID != -1) {
 				this.courses.get(courseID).curricula.add(curriculumID);
 			} else {
@@ -132,19 +125,17 @@ public class Problem {
 	}
 	
 	/**
-     * Reads information from the unavailability.utt file
-     * @param fileName
-     * @throws IOException
+     * Reads information from the unavailability.utt file.
      */
 	private void readUnavailabilities(String DataLocation, String fileName) throws IOException {
 		// File structure:
 		// Course Day Period
-		openFile(DataLocation + fileName);
+		InputReader reader = new InputReader(DataLocation + fileName);
 		boolean reachedEndOfFile = false;
 		while(!reachedEndOfFile) {
-			int courseID = nextNumber();
-			int day = nextNumber();
-			int period = nextNumber();
+			int courseID = reader.nextNumber();
+			int day = reader.nextNumber();
+			int period = reader.nextNumber();
 			if (courseID != -1) {
 				this.courses.get(courseID).unavailability.add(calcTimeslotID(day, period));
 			} else {
@@ -152,52 +143,9 @@ public class Problem {
 			}
 		}
 	}
-
-	/**
-     * Tries to open the selected file
-     * @param filename
-	 * @throws IOException 
-     */
-    private void openFile(String filename) throws IOException
-    {
-        try{ 
-        	BufferedReader temp = new BufferedReader(new FileReader(filename));
-        	temp.readLine(); // Removes first line in the file
-        	streamreader = new StreamTokenizer(temp);
-        	
-        	}
-        catch(FileNotFoundException e)
-	    {
-		System.err.println("File \"" + filename + "\" not found");
-		System.exit(0);
-	    }
-    }
-
+	
     /**
-     * Used for loading the solution
-     * @return Next number in datafile
-     * @throws java.io.IOException
-     */
-    private int nextNumber() throws IOException {
-    	try{ streamreader.nextToken();
-    	} catch(IOException e) {
-			System.err.println("Error: Failed to get next number. Is the file open?");
-			System.exit(-1);
-    	}
-    	if(streamreader.ttype == StreamTokenizer.TT_EOF) {
-    		return -1;
-    	}
-		if(streamreader.ttype != StreamTokenizer.TT_NUMBER){
-			//Takes the substring from L0001, to be 0001, so we have an ID
-			String temp = streamreader.toString().substring(7, 11);
-			return Integer.parseInt(temp);
-		}
-		return (int) streamreader.nval;
-	}
-    
-    /**
-     * Returns textual representation of the problem instance
-     * @return String
+     * Returns textual representation of the problem instance.
      */
     public String toString() {
     	String description =
@@ -216,12 +164,72 @@ public class Problem {
     		description.replaceAll("(?m)^", "\t") + // indenting description
     		"\n";
     }
+
+    /**
+     * 
+     * For easy reading input files.
+     *
+     */
+	public class InputReader {
+		
+		private StreamTokenizer streamreader; // stream reader
+		
+		/**
+	     * Constructor.
+	     * Automatically tries to open the selected file.
+	     * After this method has been called, nextNumber() can be called repeatedly.
+	     */
+	    public InputReader(String filename) throws IOException
+	    {
+	        try{ 
+	        	BufferedReader temp = new BufferedReader(new FileReader(filename));
+	        	temp.readLine(); // Removes first line in the file
+	        	streamreader = new StreamTokenizer(temp);
+	        	
+	        	}
+	        catch(FileNotFoundException e)
+		    {
+			System.err.println("File \"" + filename + "\" not found");
+			System.exit(0);
+		    }
+	    }
+	
+	    /**
+	     * Returns the next number in the data file.
+	     * Requires openFile to be called first.
+	     */
+	    private int nextNumber() throws IOException {
+	    	try{ streamreader.nextToken();
+	    	} catch(IOException e) {
+				System.err.println("Error: Failed to get next number. Is the file open?");
+				System.exit(-1);
+	    	}
+	    	if(streamreader.ttype == StreamTokenizer.TT_EOF) {
+	    		return -1;
+	    	}
+			if(streamreader.ttype != StreamTokenizer.TT_NUMBER){
+				//Takes the substring from L0001, to be 0001, so we have an ID
+				String temp = streamreader.toString().substring(7, 11);
+				return Integer.parseInt(temp);
+			}
+			return (int) streamreader.nval;
+		}
+	}
     
+    /**
+     * 
+     * Represents a course instance.
+     * Is only used for looking up course info.
+     *  
+     */
     public class Course {
     	public int courseID, lecturerID, noOfLectures, minWorkDays, noOfStudents;
     	public HashSet<Integer> curricula = new HashSet<Integer>();			// part of given curriculum?
     	public HashSet<Integer> unavailability = new HashSet<Integer>();	// available?
     	
+    	/**
+    	 * Constructor
+    	 */
     	public Course(int courseID, int lecturerID, int noOfLectures, int minWorkDays, int noOfStudents) {
     		this.courseID = courseID;
     		this.lecturerID = lecturerID;
@@ -230,6 +238,9 @@ public class Problem {
     		this.noOfStudents = noOfStudents;
     	}
     	
+        /**
+         * Returns textual representation of the course instance.
+         */
     	public String toString() {
         	String description =
         		"Course ID: " + this.courseID + "\n" +
