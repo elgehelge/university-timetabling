@@ -17,21 +17,21 @@ public class Main {
     	}
     	
         Problem problemInstance = new Problem(dataLocation, args);
-        print(problemInstance);
+        localPrint(problemInstance);
         
         Solution SolutionInstance = new Solution(problemInstance);
-        for (int i = 0; i < 20000; i++) {
+        for (int i = 0; i < 10000; i++) {
         	SolutionInstance.insertRandomLecture();
         	SolutionInstance.removeRandomLecture();
         }
-        print(SolutionInstance);
+        localPrint(SolutionInstance);
         
-        print(SolutionInstance.codeJudgeOutput());
+        System.out.println(SolutionInstance.codeJudgeOutput());
         
-        print("Great Success!");    	
+        localPrint("Great Success!");    	
     }
     
-    static private void print(Object obj) {
+    static private void localPrint(Object obj) {
     	if (local) {
     		System.out.println(obj);
     	}

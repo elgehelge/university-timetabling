@@ -76,15 +76,22 @@ public class Solution {
 		if (!isFeasible(room, day, period, courseID)) {
 			totalCost = null;
 		} else {
-			totalCost = costEstimator.calcDeltaCostAdd(room, day, period, courseID);
+			totalCost = costEstimator.calcDeltaCostInsert(room, day, period, courseID);
 			updateSolutionInsert(room, day, period, courseID);
 		}
 		return totalCost;
 	}
 	
-	private void removeLecture(int room, int day, int period) {
-		//totalCost = costEstimator.calcDeltaCostRemove(room, day, period);
-		updateSolutionRemove(room, day, period);
+	private Integer removeLecture(int room, int day, int period) {
+		Integer totalCost;
+		Integer courseID = this.timetable[room][day][period];
+		if (courseID == null) {
+			totalCost = null;
+		} else {
+			totalCost = costEstimator.calcDeltaCostRemove(room, day, period, courseID);
+			updateSolutionRemove(room, day, period, courseID);
+		}
+		return totalCost;
 	}
 	
 	
@@ -103,11 +110,7 @@ public class Solution {
 		this.unscheduled[courseID] += -1;
 	}
 	
-	private void updateSolutionRemove(int room, int day, int period) {
-		Integer courseID = this.timetable[room][day][period];
-		if (courseID == null) {
-			return;
-		}
+	private void updateSolutionRemove(int room, int day, int period, int courseID) {
 		Problem.Course course = this.problem.courses.get(courseID);
 		// Remove in timetable
 		this.timetable[room][day][period] = null;
