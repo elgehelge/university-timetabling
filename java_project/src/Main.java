@@ -1,5 +1,4 @@
 import java.io.IOException;
-import java.util.Random;
 
 public class Main {
 
@@ -19,7 +18,7 @@ public class Main {
         //System.out.println(problemInstance.toString());
         
         Solution SolutionInstance = new Solution(problemInstance);
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 10; i++) {
         	SolutionInstance.addRandomLecture();
         }
         //System.out.println(SolutionInstance);
