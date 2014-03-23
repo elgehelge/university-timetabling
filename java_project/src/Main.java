@@ -27,7 +27,7 @@ public class Main {
         Solution solutionInstance = new Solution(problemInstance);
         Integer cost = solutionInstance.getCost();
         localPrint("Initial cost: " + cost);
-        for (int i = 0; i < 1000000; i++) {
+        for (int i = 0; i < 1000; i++) {
         	Action randomAction = new RandomAction(problemInstance, solutionInstance);
         	Integer newCost = randomAction.execute();
         	if (newCost != null && newCost < cost) {
