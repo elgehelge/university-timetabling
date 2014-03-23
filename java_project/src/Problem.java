@@ -7,9 +7,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 /**
- * 
  * Represents a problem instance.
- * Is only used for looking up problem info.
+ * Is used for reading in the problem from the data and looking up this info.
  *
  */
 public class Problem {
@@ -26,6 +25,9 @@ public class Problem {
 	
     /**
      * Constructor.
+     * @param dataLocation - The path where the problem data files are located.
+     * @param args
+     * @throws IOException
      */
     public Problem(String dataLocation, String[] args) throws IOException
     {
@@ -42,14 +44,20 @@ public class Problem {
     
     /**
      * Converts day and period to timeslotID.
+     * @param day
+     * @param periode
+     * @return - A unique timeslot ID
      */
     public int calcTimeslotID(int day, int periode) {
     	return day * this.periodsPerDay + periode;
     }
     
 	/**
-     * Reads information from the basic.utt file.
-     */
+	 * Reads information from the basic.utt file.
+	 * @param DataLocation
+	 * @param fileName
+	 * @throws IOException
+	 */
 	private void readBasic(String DataLocation, String fileName) throws IOException {
 		// File structure:
 		// Courses Rooms Days Periods_per_day Curricula Constraints Lecturers
@@ -64,8 +72,11 @@ public class Problem {
 	}
 	
 	/**
-     * Reads information from the courses.utt file.
-     */
+	 * Reads information from the courses.utt file.
+	 * @param DataLocation
+	 * @param fileName
+	 * @throws IOException
+	 */
 	private void readCourses(String DataLocation, String fileName) throws IOException {
 		// File structure:
 		// CourseID LecturerID Number_of_lectures Minimum_working_days Number_of_students
@@ -87,8 +98,11 @@ public class Problem {
 	}
 	
 	/**
-     * Reads information from the rooms.utt file.
-     */
+	 * Reads information from the rooms.utt file.
+	 * @param DataLocation
+	 * @param fileName
+	 * @throws IOException
+	 */
 	private void readRooms(String DataLocation, String fileName) throws IOException {
 		// File structure:
 		// RoomID Capacity
@@ -106,8 +120,11 @@ public class Problem {
 	}
 	
 	/**
-     * Reads information from the relation.utt file.
-     */
+	 * Reads information from the relation.utt file.
+	 * @param DataLocation
+	 * @param fileName
+	 * @throws IOException
+	 */
 	private void readRelations(String DataLocation, String fileName) throws IOException {
 		// File structure:
 		// CurriculumID CourseID
@@ -125,8 +142,11 @@ public class Problem {
 	}
 	
 	/**
-     * Reads information from the unavailability.utt file.
-     */
+	 * Reads information from the unavailability.utt file.
+	 * @param DataLocation
+	 * @param fileName
+	 * @throws IOException
+	 */
 	private void readUnavailabilities(String DataLocation, String fileName) throws IOException {
 		// File structure:
 		// Course Day Period
@@ -144,9 +164,10 @@ public class Problem {
 		}
 	}
 	
-    /**
-     * Returns textual representation of the problem instance.
-     */
+	/**
+	 * Creates a textual representation of the problem instance.
+	 * @return A textual representation of the problem instance.
+	 */
     public String toString() {
     	String description =
     		"No. of courses: " + this.noOfCourses + "\n" +
@@ -166,8 +187,8 @@ public class Problem {
     }
 
     /**
-     * 
-     * For easy reading input files.
+     * Helper class for easy reading input files.
+     * @author The methods are authored Martin Lundberg-Jensen.
      *
      */
 	public class InputReader {
@@ -176,9 +197,10 @@ public class Problem {
 		
 		/**
 	     * Constructor.
-	     * Automatically tries to open the selected file.
-	     * After this method has been called, nextNumber() can be called repeatedly.
-	     */
+	     * Tries to open the selected file.
+		 * @param filename
+		 * @throws IOException
+		 */
 	    public InputReader(String filename) throws IOException
 	    {
 	        try{ 
@@ -196,7 +218,8 @@ public class Problem {
 	
 	    /**
 	     * Returns the next number in the data file.
-	     * Requires openFile to be called first.
+	     * @return
+	     * @throws IOException
 	     */
 	    private int nextNumber() throws IOException {
 	    	try{ streamreader.nextToken();
@@ -217,10 +240,9 @@ public class Problem {
 	}
     
     /**
-     * 
      * Represents a course instance.
-     * Is only used for looking up course info.
-     *  
+     * This is a data structure used for storing course info.
+     *
      */
     public class Course {
     	public int courseID, lecturerID, noOfLectures, minWorkDays, noOfStudents;
@@ -228,7 +250,12 @@ public class Problem {
     	public HashSet<Integer> unavailability = new HashSet<Integer>();	// available?
     	
     	/**
-    	 * Constructor
+    	 * Constructor.
+    	 * @param courseID
+    	 * @param lecturerID
+    	 * @param noOfLectures
+    	 * @param minWorkDays
+    	 * @param noOfStudents
     	 */
     	public Course(int courseID, int lecturerID, int noOfLectures, int minWorkDays, int noOfStudents) {
     		this.courseID = courseID;
@@ -239,7 +266,8 @@ public class Problem {
     	}
     	
         /**
-         * Returns textual representation of the course instance.
+         * Creates a textual representation of the course instance.
+         * @return A textual representation of the course instance.
          */
     	public String toString() {
         	String description =

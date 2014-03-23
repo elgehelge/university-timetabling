@@ -1,7 +1,17 @@
 import java.util.Iterator;
 import java.util.Random;
 
-
+/**
+ * A representation of a solution instance.
+ * The only operations that can be performed is inserting and removing lectures to current timetable.
+ * 
+ * Interact with this class using:
+ * - insertLecture(int room, int day, int period, int courseID)
+ *   > returns total cost after the insert OR null if the solution is infeasible.
+ * - removeLecture(int room, int day, int period)
+ *   > returns total cost after the remove OR null if the slot in the timetable was empty.
+ *
+ */
 public class Solution {
 	// Reference to the problem which this is a solution for
 	private Problem problem;
@@ -12,11 +22,11 @@ public class Solution {
 	private boolean[][][] curriculaTimeslots;	// curriculum + day + period	-> already being thought?
 	private boolean[][][] lecturersTimeslots;	// lecturer + day + period		-> already teaching?
 	// Bookkeeping of soft constraints
-	private CostEstimator costEstimator;
+	private CostCalculator costEstimator;
 	
 	public Solution(Problem problem) {
 		this.problem = problem;
-		this.costEstimator = new CostEstimator(problem, this);
+		this.costEstimator = new CostCalculator(problem, this);
 		
 		// Start with empty tables:
 		this.timetable = new Integer[problem.noOfRooms][problem.noOfDays][problem.periodsPerDay];
@@ -32,6 +42,13 @@ public class Solution {
 		}
 	}
 	
+	
+	// Public methods
+	
+	/**
+	 * Creates a textual visualization of the timetable.
+	 * @return - A textual visualization of the timetable.
+	 */
 	public String toString() {
 		String output = "***Schedule***" + "\n";
 		for (int d = 0; d < this.problem.noOfDays; d++) { // loop days
@@ -54,47 +71,112 @@ public class Solution {
 		return output;
 	}
 	
-	public void insertRandomLecture() {
+	/**
+	 * Tries to insert a random lecture into a random slot in the timetable.
+	 * @return - The total cost after the insert OR null if the solution is infeasible.
+	 */
+	public Integer insertRandomLecture() {
 		Random generator = new Random();
 		int room = generator.nextInt(this.problem.noOfRooms);
 		int day = generator.nextInt(this.problem.noOfDays);
 		int period = generator.nextInt(this.problem.periodsPerDay);
 		int courseID = generator.nextInt(this.problem.noOfCourses);
-		insertLecture(room, day, period, courseID);
+		return insertLecture(room, day, period, courseID);
 	}
 	
-	public void removeRandomLecture() {
+	/**
+	 * Tries to remove a lecture from a random slot in the timetable.
+	 * @return - The total cost after the remove OR null if the slot in the timetable was empty.
+	 */
+	public Integer removeRandomLecture() {
 		Random generator = new Random();
 		int room = generator.nextInt(this.problem.noOfRooms);
 		int day = generator.nextInt(this.problem.noOfDays);
 		int period = generator.nextInt(this.problem.periodsPerDay);
-		removeLecture(room, day, period);
+		return removeLecture(room, day, period);
 	}
 	
-	private Integer insertLecture(int room, int day, int period, int courseID) {
+	/**
+	 * Insert a given lecture into a given slot in the timetable.
+	 * @param room - The room where the lecture should be inserted.
+	 * @param day - The day where the lecture should be inserted.
+	 * @param period - The period where the lecture should be inserted.
+	 * @param courseID - The course ID of the lecture that should be inserted.
+	 * @return - The total cost after the insert OR null if the solution is infeasible.
+	 */
+	public Integer insertLecture(int room, int day, int period, int courseID) {
 		Integer totalCost;
-		if (!isFeasible(room, day, period, courseID)) {
+		if (!isInsertFeasible(room, day, period, courseID)) {
 			totalCost = null;
 		} else {
-			totalCost = costEstimator.calcDeltaCostInsert(room, day, period, courseID);
+			totalCost = costEstimator.updateCostInsert(room, day, period, courseID);
 			updateSolutionInsert(room, day, period, courseID);
 		}
 		return totalCost;
 	}
 	
-	private Integer removeLecture(int room, int day, int period) {
+	/**
+	 * Remove a lecture from a given slot in the timetable.
+	 * @param room - The room where the lecture should be removed.
+	 * @param day - The day where the lecture should be removed.
+	 * @param period - The period where the lecture should be removed.
+	 * @return - The total cost after the remove OR null if the slot in the timetable was empty.
+	 */
+	public Integer removeLecture(int room, int day, int period) {
 		Integer totalCost;
 		Integer courseID = this.timetable[room][day][period];
 		if (courseID == null) {
 			totalCost = null;
 		} else {
-			totalCost = costEstimator.calcDeltaCostRemove(room, day, period, courseID);
+			totalCost = costEstimator.updateCostRemove(room, day, period, courseID);
 			updateSolutionRemove(room, day, period, courseID);
 		}
 		return totalCost;
 	}
 	
+	/**
+	 * Creates the output in the format prescribed by codejudge.compute.dtu.dk.
+	 * @return - The solution in the format prescribed by codejudge.compute.dtu.dk.
+	 */
+	public String codeJudgeOutput() {
+		String output = this.costEstimator.toString();
+		for (int r = 0; r < this.problem.noOfRooms; r++) { // loop rooms
+			for (int d = 0; d < this.problem.noOfDays; d++) { // loop days
+				for (int p = 0; p < this.problem.periodsPerDay; p++) { // loop periods
+					if (this.timetable[r][d][p] != null) {
+						output += String.format("C%04d %d %d R%04d", this.timetable[r][d][p], d, p, r) + "\n";
+					}
+				}
+			}
+		}
+		return output;
+	}
 	
+	/**
+	 * Is the given curriculum being taught in the given timeslot.
+	 * (Also validates timeslot)
+	 * @param curriculum - The queried curriculum.
+	 * @param day - The queried day.
+	 * @param period - The queried period.
+	 * @return - Whether the given curriculum is being taught in the given timeslot, and whether the timeslot is valid.
+	 */
+	public boolean isCurriculaTaught(int curriculum, int day, int period) {
+		if (period >= 0 && period < problem.periodsPerDay) {
+			return this.curriculaTimeslots[curriculum][day][period];
+		}
+		return false;
+	}
+	
+	
+	// Private methods
+	
+	/**
+	 * Updates the internal representation of the solution instance on insert operations.
+	 * @param room - The room where the lecture should be inserted.
+	 * @param day - The day where the lecture should be inserted.
+	 * @param period - The period where the lecture should be inserted.
+	 * @param courseID - The course ID of the lecture that should be inserted.
+	 */
 	private void updateSolutionInsert(int room, int day, int period, int courseID) {
 		Problem.Course course = this.problem.courses.get(courseID);
 		// Register in timetable
@@ -110,6 +192,13 @@ public class Solution {
 		this.unscheduled[courseID] += -1;
 	}
 	
+	/**
+	 * Updates the internal representation of the solution instance on remove operations.
+	 * @param room - The room where the lecture should be removed.
+	 * @param day - The day where the lecture should be removed.
+	 * @param period - The period where the lecture should be removed.
+	 * @param courseID - The course ID of the lecture that should be removed.
+	 */
 	private void updateSolutionRemove(int room, int day, int period, int courseID) {
 		Problem.Course course = this.problem.courses.get(courseID);
 		// Remove in timetable
@@ -125,7 +214,15 @@ public class Solution {
 		this.unscheduled[courseID] += 1;
 	}
 	
-	private boolean isFeasible(int room, int day, int period, int courseID) {
+	/**
+	 * Tests whether a given lecture can be inserted into the given slot in the current timetable.
+	 * @param room - The room where the lecture should be inserted.
+	 * @param day - The day where the lecture should be inserted.
+	 * @param period - The period where the lecture should be inserted.
+	 * @param courseID - The course ID of the lecture that should be inserted.
+	 * @return - Whether the solution resulting from the insert is feasible.
+	 */
+	private boolean isInsertFeasible(int room, int day, int period, int courseID) {
 		Problem.Course course = this.problem.courses.get(courseID);
 		// Is there another course scheduled in the same room and same timeslot?
 		if (this.timetable[room][day][period] != null) {
@@ -152,31 +249,5 @@ public class Solution {
 			}
 		}
 		return true;
-	}
-	
-	//private void removeRandomLecture(int room, int timeslot) {
-	//	// TODO: Implement
-	//	// TODO: should return delta-cost & courseID
-	//}
-	
-	public boolean isCurriculaTaught(int curriculum, int day, int period) {
-		if (period >= 0 && period < problem.periodsPerDay) {
-			return this.curriculaTimeslots[curriculum][day][period];
-		}
-		return false;
-	}
-	
-	public String codeJudgeOutput() {
-		String output = this.costEstimator.codeJudgeHeader();
-		for (int r = 0; r < this.problem.noOfRooms; r++) { // loop rooms
-			for (int d = 0; d < this.problem.noOfDays; d++) { // loop days
-				for (int p = 0; p < this.problem.periodsPerDay; p++) { // loop periods
-					if (this.timetable[r][d][p] != null) {
-						output += String.format("C%04d %d %d R%04d", this.timetable[r][d][p], d, p, r) + "\n";
-					}
-				}
-			}
-		}
-		return output;
 	}
 }
