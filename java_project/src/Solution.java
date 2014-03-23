@@ -3,13 +3,7 @@ import java.util.Random;
 
 /**
  * A representation of a solution instance.
- * The only operations that can be performed is inserting and removing lectures to current timetable.
- * 
- * Interact with this class using:
- * - insertLecture(int room, int day, int period, int courseID)
- *   > returns total cost after the insert OR null if the solution is infeasible.
- * - removeLecture(int room, int day, int period)
- *   > returns total cost after the remove OR null if the slot in the timetable was empty.
+ * Everything is based on inserting and removing lectures into the current timetable.
  *
  */
 public class Solution {
@@ -22,11 +16,11 @@ public class Solution {
 	private boolean[][][] curriculaTimeslots;	// curriculum + day + period	-> already being thought?
 	private boolean[][][] lecturersTimeslots;	// lecturer + day + period		-> already teaching?
 	// Bookkeeping of soft constraints
-	private CostCalculator costEstimator;
+	private CostCalculator costCalculator;
 	
 	public Solution(Problem problem) {
 		this.problem = problem;
-		this.costEstimator = new CostCalculator(problem, this);
+		this.costCalculator = new CostCalculator(problem, this);
 		
 		// Start with empty tables:
 		this.timetable = new Integer[problem.noOfRooms][problem.noOfDays][problem.periodsPerDay];
@@ -72,28 +66,11 @@ public class Solution {
 	}
 	
 	/**
-	 * Tries to insert a random lecture into a random slot in the timetable.
-	 * @return - The total cost after the insert OR null if the solution is infeasible.
+	 * Gets the total cost of the current state of the solution.
+	 * @return - The total cost.
 	 */
-	public Integer insertRandomLecture() {
-		Random generator = new Random();
-		int room = generator.nextInt(this.problem.noOfRooms);
-		int day = generator.nextInt(this.problem.noOfDays);
-		int period = generator.nextInt(this.problem.periodsPerDay);
-		int courseID = generator.nextInt(this.problem.noOfCourses);
-		return insertLecture(room, day, period, courseID);
-	}
-	
-	/**
-	 * Tries to remove a lecture from a random slot in the timetable.
-	 * @return - The total cost after the remove OR null if the slot in the timetable was empty.
-	 */
-	public Integer removeRandomLecture() {
-		Random generator = new Random();
-		int room = generator.nextInt(this.problem.noOfRooms);
-		int day = generator.nextInt(this.problem.noOfDays);
-		int period = generator.nextInt(this.problem.periodsPerDay);
-		return removeLecture(room, day, period);
+	public int getCost() {
+		return this.costCalculator.costTotal;
 	}
 	
 	/**
@@ -109,7 +86,7 @@ public class Solution {
 		if (!isInsertFeasible(room, day, period, courseID)) {
 			totalCost = null;
 		} else {
-			totalCost = costEstimator.updateCostInsert(room, day, period, courseID);
+			totalCost = costCalculator.updateCostInsert(room, day, period, courseID);
 			updateSolutionInsert(room, day, period, courseID);
 		}
 		return totalCost;
@@ -128,7 +105,7 @@ public class Solution {
 		if (courseID == null) {
 			totalCost = null;
 		} else {
-			totalCost = costEstimator.updateCostRemove(room, day, period, courseID);
+			totalCost = costCalculator.updateCostRemove(room, day, period, courseID);
 			updateSolutionRemove(room, day, period, courseID);
 		}
 		return totalCost;
@@ -139,7 +116,7 @@ public class Solution {
 	 * @return - The solution in the format prescribed by codejudge.compute.dtu.dk.
 	 */
 	public String codeJudgeOutput() {
-		String output = this.costEstimator.toString();
+		String output = this.costCalculator.toString();
 		for (int r = 0; r < this.problem.noOfRooms; r++) { // loop rooms
 			for (int d = 0; d < this.problem.noOfDays; d++) { // loop days
 				for (int p = 0; p < this.problem.periodsPerDay; p++) { // loop periods

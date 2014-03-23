@@ -21,7 +21,7 @@ public class CostCalculator {
 	final static int COST_UNSCHEDULED			= 10;
 
 	// Bookkeeping on the number of each penalty and the total cost
-	private int costTotal;
+	public int costTotal;
 	private int countUnscheduled;
 	private int countRoomCapacity;
 	private int countMinimumWorkingDays;
