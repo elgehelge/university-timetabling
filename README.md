@@ -10,61 +10,56 @@ Java Doc:
 [index.html](https://rawgithub.com/elgehelge/university-timetabling/master/java_project/doc/index.html)
 
 ***
-Example of Main.java:
----------------------
+Example of search class:
+------------------------
 ```java
-import java.io.IOException;
+public class SimpleSearch extends Search {
 
-public class Main {
-
-	final static String LOCAL_TEST_NO = "01";
-	static int timeLimit = 60;
-	static boolean local = false;
+	private Solution solution;
+	private int countNonimprovements;
+	private int maxNonimprovements = 500;
+	private Integer cost;
+	private int countStep;
 	
-    public static void main(String[] args) throws IOException {
-    	
-    	String dataLocation = "";
-    	
-    	// RUN LOCAL (no arguments, or timeLimit given as argument)
-    	if (args.length <= 1) {
-    		local = true;
-    		args = new String[]{"basic.utt", "courses.utt", "lecturers.utt", "rooms.utt", "curricula.utt", "relation.utt", "unavailability.utt"};
-    		dataLocation = "./TestDataUTT/Test" + LOCAL_TEST_NO + "/";
-    		if (args.length == 1) {
-    			timeLimit = Integer.parseInt(args[0]);
-    		}
+	public SimpleSearch(Solution initialSolution, boolean outputInfo) {
+		super(outputInfo);
+		this.solution = initialSolution;
+		this.cost = initialSolution.getCost();
+		output("Initial cost: " + this.cost);
+	}
+	
+	public void iterate() {
+		this.countStep++;
+		Action randomAction = new RandomAction(this.solution);
+    	Integer newCost = randomAction.execute();
+    	if (newCost != null && newCost < this.cost) {
+    		this.cost = newCost;
+    		output("Step " + this.countStep + ": Improving to " + cost);
+    	} else {
+    		randomAction.revert();
+    		this.countNonimprovements += 1;
+    	}
+    	if (maxNonimprovements < countNonimprovements) {
+    		shuffle();
+    		this.countNonimprovements = 0;
     	}
     	
-        Problem problemInstance = new Problem(dataLocation, args);
-        localPrint(problemInstance);
-        
-        // Random HillClimber-like search (moves on every improvement encountered)
-        Solution solutionInstance = new Solution(problemInstance);
-        Integer cost = solutionInstance.getCost();
-        localPrint("Initial cost: " + cost);
-        for (int i = 0; i < 1000000; i++) {
-        	Action randomAction = new RandomAction(problemInstance, solutionInstance);
-        	Integer newCost = randomAction.execute();
-        	if (newCost != null && newCost < cost) {
-        		cost = newCost;
-        		localPrint("Step " + i + ": Improving to " + cost);
-        	} else {
-        		randomAction.revert();
-        	}
-        }
-        
-        localPrint(solutionInstance);
-        
-        System.out.println(solutionInstance.codeJudgeOutput());
-        
-        localPrint("Great Success!");    	
-    }
-    
-    static private void localPrint(Object obj) {
-    	if (local) {
-    		System.out.println(obj);
-    	}
-    }
+	}
+	
+	public void shuffle() {
+		for (int i = 0; i < 1000; i++) {
+			Action randomAction = new RandomAction(this.solution);
+			Integer newCost = randomAction.execute();
+			if (newCost == null) {
+				randomAction.revert();
+			}
+		}
+	}
+	
+	public Solution getBestSolution() {
+		return this.solution;
+	}
+	
 }
 ```
 
@@ -72,6 +67,10 @@ public class Main {
 Example of output:
 ------------------
 ```java
+
+********
+PROBLEM:
+********
 Problem instance:
 	No. of courses: 30
 	No. of rooms: 6
@@ -324,114 +323,131 @@ Problem instance:
 			Unavailable timeslots: [0, 1, 2, 6, 7, 8, 12, 13, 14, 19, 18, 20, 25, 24, 26]
 		}
 
-Initial cost: 2130
-Step 2: Improving to 2091
-Step 3: Improving to 2078
-Step 4: Improving to 2067
-Step 13: Improving to 2058
-Step 14: Improving to 2045
-Step 22: Improving to 2035
-Step 24: Improving to 2024
-Step 25: Improving to 2013
-Step 32: Improving to 2010
-Step 33: Improving to 1998
-Step 35: Improving to 1992
-Step 43: Improving to 1971
-Step 45: Improving to 1954
-Step 47: Improving to 1951
-Step 70: Improving to 1928
-Step 72: Improving to 1918
-Step 75: Improving to 1917
-Step 77: Improving to 1915
-Step 83: Improving to 1914
-Step 84: Improving to 1900
-Step 85: Improving to 1888
-Step 89: Improving to 1874
-Step 94: Improving to 1845
-Step 98: Improving to 1837
-Step 99: Improving to 1823
-Step 100: Improving to 1811
-Step 104: Improving to 1801
-Step 108: Improving to 1798
-Step 203: Improving to 1775
-Step 207: Improving to 1750
-Step 210: Improving to 1741
-Step 211: Improving to 1725
-Step 436: Improving to 1724
-Step 437: Improving to 1711
-Step 443: Improving to 1687
-Step 548: Improving to 1683
-***Schedule***
-	 Day 0  |   P0 |   P1 |   P2 |   P3 |   P4 |   P5 | 	 Day 1  |   P0 |   P1 |   P2 |   P3 |   P4 |   P5 | 	 Day 2  |   P0 |   P1 |   P2 |   P3 |   P4 |   P5 | 	 Day 3  |   P0 |   P1 |   P2 |   P3 |   P4 |   P5 | 	 Day 4  |   P0 |   P1 |   P2 |   P3 |   P4 |   P5 | 
-Room 0		| null |   10 |    5 | null | null |   19 | 		| null | null | null |   24 | null |   16 | 		| null | null | null |    1 |   27 |   10 | 		|   25 | null | null | null |    3 | null | 		| null | null | null | null |   25 | null | 
-Room 1		| null | null |    8 | null |    0 |   20 | 		|    8 | null | null | null |    0 | null | 		|   14 | null | null | null | null | null | 		|    1 | null | null |   15 | null | null | 		| null | null | null |    3 |   18 | null | 
-Room 2		| null | null | null |   29 |   22 | null | 		| null |   12 | null | null | null | null | 		| null |   16 | null |   27 | null |   29 | 		| null | null | null | null | null |    5 | 		| null | null |    8 | null | null | null | 
-Room 3		| null | null | null | null | null |    7 | 		|   27 | null |   29 | null | null | null | 		|   25 | null | null | null | null | null | 		| null |   14 |   20 | null |   19 | null | 		| null |   12 | null |   10 | null | null | 
-Room 4		|   13 | null |   12 | null | null | null | 		|    3 |   18 | null | null | null | null | 		|   23 | null | null | null | null | null | 		| null |   18 | null |    1 | null | null | 		|   29 | null | null | null | null | null | 
-Room 5		| null | null |   15 | null | null | null | 		|   24 | null | null |    9 | null | null | 		| null | null |   10 |   18 | null | null | 		| null | null | null |   10 | null |   21 | 		| null | null |   29 |   25 | null |   24 | 
 
-UNSCHEDULED 104
-ROOMCAPACITY 421
-ROOMSTABILITY 25
-MINIMUMWORKINGDAYS 56
-CURRICULUMCOMPACTNESS 56
-OBJECTIVE 1878
-C0010 0 1 R0000
-C0005 0 2 R0000
-C0019 0 5 R0000
-C0024 1 3 R0000
-C0016 1 5 R0000
-C0001 2 3 R0000
-C0027 2 4 R0000
-C0010 2 5 R0000
-C0025 3 0 R0000
-C0003 3 4 R0000
-C0025 4 4 R0000
-C0008 0 2 R0001
-C0000 0 4 R0001
-C0020 0 5 R0001
-C0008 1 0 R0001
-C0000 1 4 R0001
-C0014 2 0 R0001
-C0001 3 0 R0001
-C0015 3 3 R0001
-C0003 4 3 R0001
-C0018 4 4 R0001
-C0029 0 3 R0002
-C0022 0 4 R0002
-C0012 1 1 R0002
-C0016 2 1 R0002
-C0027 2 3 R0002
-C0029 2 5 R0002
-C0005 3 5 R0002
-C0008 4 2 R0002
-C0007 0 5 R0003
-C0027 1 0 R0003
+*******
+SEARCH:
+*******
+Running for 3 seconds...
+Initial cost: 2130
+Step 5: Improving to 2114
+Step 10: Improving to 2069
+Step 12: Improving to 2041
+Step 21: Improving to 1968
+Step 25: Improving to 1955
+Step 26: Improving to 1945
+Step 31: Improving to 1919
+Step 39: Improving to 1894
+Step 64: Improving to 1892
+Step 717: Improving to 1882
+Step 722: Improving to 1791
+Step 723: Improving to 1777
+Step 724: Improving to 1766
+Step 725: Improving to 1763
+Step 727: Improving to 1740
+Step 728: Improving to 1729
+Step 6713: Improving to 1693
+Step 12314: Improving to 1678
+Step 12319: Improving to 1665
+Step 14550: Improving to 1597
+Step 14570: Improving to 1590
+Step 85567: Improving to 1589
+Step 85568: Improving to 1576
+Step 85569: Improving to 1560
+Step 85570: Improving to 1536
+
+***************
+FINAL SCHEDULE:
+***************
+Schedule:
+	 Day 0  |   P0 |   P1 |   P2 |   P3 |   P4 |   P5 | 	 Day 1  |   P0 |   P1 |   P2 |   P3 |   P4 |   P5 | 	 Day 2  |   P0 |   P1 |   P2 |   P3 |   P4 |   P5 | 	 Day 3  |   P0 |   P1 |   P2 |   P3 |   P4 |   P5 | 	 Day 4  |   P0 |   P1 |   P2 |   P3 |   P4 |   P5 | 
+Room 0		|    9 | null |   21 |   26 |   25 |   10 | 		| null | null | null | null | null | null | 		|    9 |   22 | null | null | null | null | 		| null | null | null | null | null |   22 | 		| null |   19 |   18 |   26 | null |   21 | 
+Room 1		| null | null | null | null | null | null | 		| null |   15 | null | null | null |   12 | 		|   21 |   14 | null |   10 | null |   23 | 		|   23 |   20 | null | null | null | null | 		|    5 | null |   29 |   12 |   29 |   17 | 
+Room 2		| null | null |   15 | null | null |   27 | 		|   12 | null | null | null |   21 | null | 		| null | null |   29 |   24 |   16 |   26 | 		|    0 | null | null |   26 |    5 |   24 | 		| null | null | null |    2 | null |   26 | 
+Room 3		| null | null | null |    4 |    8 | null | 		| null |   26 |   29 |    0 |   13 | null | 		|   11 | null | null |   29 | null | null | 		| null |    6 |    1 |   28 |    0 | null | 		|   22 | null | null |    5 | null | null | 
+Room 4		|   27 |   15 | null | null | null | null | 		| null | null |   20 | null | null | null | 		|    3 | null |    1 |   15 | null | null | 		|    6 | null | null | null |   18 |   10 | 		| null | null | null | null | null | null | 
+Room 5		| null | null | null | null |   22 | null | 		| null | null | null | null |    9 | null | 		| null | null | null | null | null | null | 		|   22 | null |    6 |   18 | null | null | 		|   16 |   11 | null |   10 | null |    1 | 
+
+
+*****************
+CODEJUDGE OUTPUT:
+*****************
+UNSCHEDULED 89
+ROOMCAPACITY 983
+ROOMSTABILITY 28
+MINIMUMWORKINGDAYS 48
+CURRICULUMCOMPACTNESS 62
+OBJECTIVE 2265
+C0009 0 0 R0000
+C0021 0 2 R0000
+C0026 0 3 R0000
+C0025 0 4 R0000
+C0010 0 5 R0000
+C0009 2 0 R0000
+C0022 2 1 R0000
+C0022 3 5 R0000
+C0019 4 1 R0000
+C0018 4 2 R0000
+C0026 4 3 R0000
+C0021 4 5 R0000
+C0015 1 1 R0001
+C0012 1 5 R0001
+C0021 2 0 R0001
+C0014 2 1 R0001
+C0010 2 3 R0001
+C0023 2 5 R0001
+C0023 3 0 R0001
+C0020 3 1 R0001
+C0005 4 0 R0001
+C0029 4 2 R0001
+C0012 4 3 R0001
+C0029 4 4 R0001
+C0017 4 5 R0001
+C0015 0 2 R0002
+C0027 0 5 R0002
+C0012 1 0 R0002
+C0021 1 4 R0002
+C0029 2 2 R0002
+C0024 2 3 R0002
+C0016 2 4 R0002
+C0026 2 5 R0002
+C0000 3 0 R0002
+C0026 3 3 R0002
+C0005 3 4 R0002
+C0024 3 5 R0002
+C0002 4 3 R0002
+C0026 4 5 R0002
+C0004 0 3 R0003
+C0008 0 4 R0003
+C0026 1 1 R0003
 C0029 1 2 R0003
-C0025 2 0 R0003
-C0014 3 1 R0003
-C0020 3 2 R0003
-C0019 3 4 R0003
-C0012 4 1 R0003
-C0010 4 3 R0003
-C0013 0 0 R0004
-C0012 0 2 R0004
-C0003 1 0 R0004
-C0018 1 1 R0004
-C0023 2 0 R0004
-C0018 3 1 R0004
-C0001 3 3 R0004
-C0029 4 0 R0004
-C0015 0 2 R0005
-C0024 1 0 R0005
-C0009 1 3 R0005
-C0010 2 2 R0005
-C0018 2 3 R0005
-C0010 3 3 R0005
-C0021 3 5 R0005
-C0029 4 2 R0005
-C0025 4 3 R0005
-C0024 4 5 R0005
+C0000 1 3 R0003
+C0013 1 4 R0003
+C0011 2 0 R0003
+C0029 2 3 R0003
+C0006 3 1 R0003
+C0001 3 2 R0003
+C0028 3 3 R0003
+C0000 3 4 R0003
+C0022 4 0 R0003
+C0005 4 3 R0003
+C0027 0 0 R0004
+C0015 0 1 R0004
+C0020 1 2 R0004
+C0003 2 0 R0004
+C0001 2 2 R0004
+C0015 2 3 R0004
+C0006 3 0 R0004
+C0018 3 4 R0004
+C0010 3 5 R0004
+C0022 0 4 R0005
+C0009 1 4 R0005
+C0022 3 0 R0005
+C0006 3 2 R0005
+C0018 3 3 R0005
+C0016 4 0 R0005
+C0011 4 1 R0005
+C0010 4 3 R0005
+C0001 4 5 R0005
 
 Great Success!
 ```

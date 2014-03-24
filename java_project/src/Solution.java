@@ -1,5 +1,4 @@
 import java.util.Iterator;
-import java.util.Random;
 
 /**
  * A representation of a solution instance.
@@ -8,7 +7,7 @@ import java.util.Random;
  */
 public class Solution {
 	// Reference to the problem which this is a solution for
-	private Problem problem;
+	public Problem problem;
 	// Solution state
 	private Integer[][][] timetable;			// room + day + period			-> courseID (The Timetable)
 	private int[] unscheduled;					// courseID						-> no. of unscheduled lectures
@@ -44,7 +43,7 @@ public class Solution {
 	 * @return - A textual visualization of the timetable.
 	 */
 	public String toString() {
-		String output = "***Schedule***" + "\n";
+		String output = "Schedule:" + "\n";
 		for (int d = 0; d < this.problem.noOfDays; d++) { // loop days
 			output += "\t Day " + d + "  | ";
 			for (int p = 0; p < this.problem.periodsPerDay; p++) { // loop periods

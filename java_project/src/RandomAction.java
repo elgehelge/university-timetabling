@@ -4,7 +4,7 @@ import java.util.Random;
  * Represents a random Action i.e. insert/remove a random lecture into a random slot in the timetable.
  *
  */
-public class RandomAction extends Action {
+public class RandomAction implements Action {
 
 	private boolean insert;
 	private int room;
@@ -17,14 +17,14 @@ public class RandomAction extends Action {
 	/*
 	 * Constructor.
 	 */
-	public RandomAction(Problem problem, Solution solution) {
+	public RandomAction(Solution solution) {
 		this.randomGenerator = new Random();
 		this.solution = solution;
 		this.insert = randomGenerator.nextBoolean();
-		this.room = randomGenerator.nextInt(problem.noOfRooms);
-		this.day = randomGenerator.nextInt(problem.noOfDays);
-		this.period = randomGenerator.nextInt(problem.periodsPerDay);
-		this.courseID = randomGenerator.nextInt(problem.noOfCourses);
+		this.room = randomGenerator.nextInt(solution.problem.noOfRooms);
+		this.day = randomGenerator.nextInt(solution.problem.noOfDays);
+		this.period = randomGenerator.nextInt(solution.problem.periodsPerDay);
+		this.courseID = randomGenerator.nextInt(solution.problem.noOfCourses);
 	}
 	
 	@Override

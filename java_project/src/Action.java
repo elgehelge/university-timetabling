@@ -1,8 +1,8 @@
 
-abstract class Action {
+public interface Action {
 
-	abstract public Integer execute ();
+	public Integer execute ();
 	
-	abstract public Integer revert ();
+	public Integer revert ();
 
 }
