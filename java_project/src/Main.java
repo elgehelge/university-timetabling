@@ -42,6 +42,7 @@ public class Main {
         // Output for CodeJudge
         localPrint("\n*****************\nCODEJUDGE OUTPUT:\n*****************");
         System.out.println(search.getBestSolution().codeJudgeOutput());
+        System.out.println(search.getBestSolution().getCost());
         
         localPrint("Great Success!");
     }

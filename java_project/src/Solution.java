@@ -73,6 +73,17 @@ public class Solution {
 	}
 	
 	/**
+	 * Gets the course taught in the given slot in the timetable.
+	 * @param room - The room that are queried.
+	 * @param day - The day that are queried.
+	 * @param period - The period that are queried.
+	 * @return - The courseID of the course that are taught or null if no courses are taught.
+	 */
+	public Integer getCourse(int room, int day, int period) {
+		return this.timetable[room][day][period];
+	}
+	
+	/**
 	 * Insert a given lecture into a given slot in the timetable.
 	 * @param room - The room where the lecture should be inserted.
 	 * @param day - The day where the lecture should be inserted.

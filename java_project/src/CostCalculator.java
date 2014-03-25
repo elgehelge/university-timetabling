@@ -106,12 +106,12 @@ public class CostCalculator {
 	 */
 	public String toString() {
 		return
-			"UNSCHEDULED " + countUnscheduled + "\n" +
-			"ROOMCAPACITY " + countRoomCapacity + "\n" +
-			"ROOMSTABILITY " + countRoomStability + "\n" +
-			"MINIMUMWORKINGDAYS " + countMinimumWorkingDays + "\n" +
-			"CURRICULUMCOMPACTNESS " + countCurriculumCompactness + "\n" +
-			"OBJECTIVE " + costTotal + "\n";
+			"UNSCHEDULED " + this.countUnscheduled + "\n" +
+			"ROOMCAPACITY " + this.countRoomCapacity + "\n" +
+			"ROOMSTABILITY " + this.countRoomStability + "\n" +
+			"MINIMUMWORKINGDAYS " + this.countMinimumWorkingDays + "\n" +
+			"CURRICULUMCOMPACTNESS " + this.countCurriculumCompactness + "\n" +
+			"OBJECTIVE " + this.costTotal + "\n";
 	}
 	
 	/**
@@ -148,7 +148,7 @@ public class CostCalculator {
 		this.countCurriculumCompactness += deltaCountCurriculumCompactness;
 		this.costTotal += deltaTotalCost;
 		
-		return costTotal;
+		return this.costTotal;
 	}
 	
 	/**

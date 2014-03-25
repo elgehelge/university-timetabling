@@ -27,7 +27,6 @@ public class RandomAction implements Action {
 		this.courseID = randomGenerator.nextInt(solution.problem.noOfCourses);
 	}
 	
-	@Override
 	/*
 	 * Tries to execute the random action.
 	 * @return - The total cost after the insertion/removal OR null if no change was made.
@@ -36,11 +35,13 @@ public class RandomAction implements Action {
 		if (insert) {
 			return solution.insertLecture(room, day, period, courseID);
 		} else {
+			if (this.solution.getCourse(room, day, period) != null) {
+				this.courseID = this.solution.getCourse(room, day, period);
+			}
 			return solution.removeLecture(room, day, period);
 		}
 	}
 
-	@Override
 	/*
 	 * Tries to revert the random action.
 	 * @return - The total cost after the insertion/removal OR null if no change was made.

@@ -3,7 +3,7 @@ public class SimpleSearch extends Search {
 
 	private Solution solution;
 	private int countNonimprovements;
-	private int maxNonimprovements = 500;
+	private int maxNonimprovements = 100000;
 	private Integer cost;
 	private int countStep;
 	
@@ -18,27 +18,30 @@ public class SimpleSearch extends Search {
 		this.countStep++;
 		Action randomAction = new RandomAction(this.solution);
     	Integer newCost = randomAction.execute();
-    	if (newCost != null && newCost < this.cost) {
-    		this.cost = newCost;
-    		output("Step " + this.countStep + ": Improving to " + cost);
+    	if (newCost != null) {
+    		if (newCost < this.cost) {
+	    		this.cost = newCost;
+	    		output("Step " + this.countStep + ": Improving to " + this.cost);
+	    	} else {
+	    		randomAction.revert();
+	    		this.countNonimprovements += 1;
+	    	}
     	} else {
-    		randomAction.revert();
-    		this.countNonimprovements += 1;
     	}
     	if (maxNonimprovements < countNonimprovements) {
     		shuffle();
     		this.countNonimprovements = 0;
     	}
-    	
 	}
 	
 	public void shuffle() {
-		for (int i = 0; i < 1000; i++) {
+		for (int i = 0; i < 10; i++) {
 			Action randomAction = new RandomAction(this.solution);
 			Integer newCost = randomAction.execute();
 			if (newCost == null) {
 				randomAction.revert();
 			}
+			this.cost = solution.getCost();
 		}
 	}
 	
