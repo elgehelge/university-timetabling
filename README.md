@@ -1,6 +1,8 @@
 Java framework for the Curriculum-based University Course Timetabling optimization problem
 ==========================================================================================
 
+Timetabel scheduling can be a super complex non-convex optimisation task. One class of timetable scheduling is the Curriculum-based University Course Timetabling. This Java framework implements a fast delta-evaluation (fast computation of the cost of a timetable instance given another instance and the difference between them), and makes is easy to apply any meta-heuristic random search on top of it.
+
 This code made in the context of a course in metaheuristics at the Danish Technical University.
 
 Description of the problem, the cost function, the input data:
